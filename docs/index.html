@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeadlessUI | Documentation</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <span class="logo">HeadlessUI</span>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="api.html">API Reference</a></li>
+                <li><a href="https://github.com">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header>
+        <div class="container">
+            <h1>The Professional "Headless" UI Framework</h1>
+            <p>Modular, Performance-driven, and Apple-inspired design for Roblox.</p>
+            <div class="cta-buttons">
+                <a href="#install" class="btn primary">Get Started</a>
+                <a href="api.html" class="btn secondary">View API</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="container">
+        <div class="grid">
+            <div class="card">
+                <h3>Glassmorphism</h3>
+                <p>iOS-style blur and transparency effects that look stunning in any game.</p>
+            </div>
+            <div class="card">
+                <h3>Auto-Performance</h3>
+                <p>Detects low-spec devices and automatically scales back effects for maximum FPS.</p>
+            </div>
+            <div class="card">
+                <h3>Modular Engine</h3>
+                <p>Clean code separation between Rendering, Logic, and Components.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="container">
+        <h2>Quick Start</h2>
+        <p>Install HeadlessUI via loadstring in your script executor:</p>
+        <pre><code class="language-lua">local HeadlessUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/User/Repo/main/HeadlessUI.lua"))()
+local UI = HeadlessUI.new()
+
+local Window = UI:CreateWindow({Title = "RBXTOOLS"})
+local Tab = Window:AddTab("Combat")
+
+Tab:AddToggle("Aimbot", function(state)
+    print("Aimbot is now:", state)
+end)
+
+UI:Notify("Success", "HeadlessUI Loaded!")</code></pre>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 HeadlessUI. Built for Roblox Architects.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

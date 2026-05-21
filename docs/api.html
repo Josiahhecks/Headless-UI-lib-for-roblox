@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Reference | HeadlessUI</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <span class="logo">HeadlessUI Docs</span>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="api.html">API Reference</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1>API Reference</h1>
+
+        <section class="api-block">
+            <h2>HeadlessUI.new()</h2>
+            <p>Initializes a new UI session. Sets up CoreGui isolation and performance monitoring.</p>
+            <pre><code class="language-lua">local UI = HeadlessUI.new()</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>UI:CreateWindow(config)</h2>
+            <p>Creates a new draggable window with built-in snapping.</p>
+            <ul>
+                <li><code>config.Title</code>: The title of the window.</li>
+            </ul>
+            <pre><code class="language-lua">local Window = UI:CreateWindow({Title = "My Script"})</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>Window:AddTab(name)</h2>
+            <p>Adds a navigation tab to the window. Returns a Tab object.</p>
+            <pre><code class="language-lua">local Tab = Window:AddTab("Main")</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>Tab:AddToggle(name, callback)</h2>
+            <p>Adds an iOS-style toggle switch.</p>
+            <pre><code class="language-lua">Tab:AddToggle("Enabled", function(state)
+    print("State is:", state)
+end)</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>Tab:AddSlider(name, min, max, default, callback)</h2>
+            <p>Adds a functional slider component.</p>
+            <pre><code class="language-lua">Tab:AddSlider("FOV", 0, 120, 70, function(val)
+    print("Value:", val)
+end)</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>Tab:AddDropdown(name, options, callback)</h2>
+            <p>Adds a dropdown selection menu.</p>
+            <pre><code class="language-lua">Tab:AddDropdown("Theme", {"Dark", "Light", "Glass"}, function(selected)
+    print("Selected:", selected)
+end)</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>Tab:AddKeybind(name, default, callback)</h2>
+            <p>Adds a keybind listener.</p>
+            <pre><code class="language-lua">Tab:AddKeybind("Toggle UI", Enum.KeyCode.RightShift, function()
+    print("Key pressed!")
+end)</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>UI:Notify(title, message, duration)</h2>
+            <p>Triggers a global notification that stacks and resizes based on message length.</p>
+            <pre><code class="language-lua">UI:Notify("Alert", "Something happened!", 5)</code></pre>
+        </section>
+
+        <section class="api-block">
+            <h2>UI:Destroy()</h2>
+            <p>Completely removes the UI and cleans up memory (Garbage Collection).</p>
+            <pre><code class="language-lua">UI:Destroy()</code></pre>
+        </section>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
