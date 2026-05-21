@@ -10,7 +10,6 @@ function Components.new(Renderer)
     return self
 end
 
--- Chainable Window Object
 local Window = {}
 Window.__index = Window
 
@@ -21,8 +20,8 @@ function Window.new(renderer, config)
 
     self.Instance = renderer:Create("CanvasGroup", {
         Name = "HeadlessWindow",
-        Size = UDim2.new(0, 500, 0, 350),
-        Position = UDim2.new(0.5, -250, 0.5, -175),
+        Size = UDim2.new(0, 550, 0, 400),
+        Position = UDim2.new(0.5, -275, 0.5, -200),
         BackgroundColor3 = renderer.Theme.Background,
         ClipsDescendants = true
     })
@@ -30,44 +29,41 @@ function Window.new(renderer, config)
 
     local titleBar = renderer:Create("Frame", {
         Name = "TitleBar",
-        Size = UDim2.new(1, 0, 0, 40),
+        Size = UDim2.new(1, 0, 0, 45),
         BackgroundTransparency = 1,
         Parent = self.Instance
     })
 
-    local titleLabel = renderer:Create("TextLabel", {
+    renderer:Create("TextLabel", {
         Text = config.Title or "HeadlessUI",
         Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0, 10, 0, 0),
+        Position = UDim2.new(0, 15, 0, 0),
         BackgroundTransparency = 1,
         TextColor3 = renderer.Theme.Text,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Font = Enum.Font.GothamMedium,
-        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        TextSize = 18,
         Parent = titleBar
     })
 
     renderer:MakeDraggable(self.Instance, titleBar)
 
-    self.TabContainer = renderer:Create("Frame", {
+    self.TabContainer = renderer:Create("ScrollingFrame", {
         Name = "TabContainer",
-        Position = UDim2.new(0, 10, 0, 50),
-        Size = UDim2.new(0, 120, 1, -60),
+        Position = UDim2.new(0, 10, 0, 55),
+        Size = UDim2.new(0, 140, 1, -65),
         BackgroundTransparency = 1,
+        ScrollBarThickness = 0,
         Parent = self.Instance
     })
+    renderer:Create("UIListLayout", {Padding = UDim.new(0, 6), Parent = self.TabContainer})
 
     self.ContentContainer = renderer:Create("Frame", {
         Name = "ContentContainer",
-        Position = UDim2.new(0, 140, 0, 50),
-        Size = UDim2.new(1, -150, 1, -60),
+        Position = UDim2.new(0, 160, 0, 55),
+        Size = UDim2.new(1, -170, 1, -65),
         BackgroundTransparency = 1,
         Parent = self.Instance
-    })
-
-    renderer:Create("UIListLayout", {
-        Padding = UDim.new(0, 5),
-        Parent = self.TabContainer
     })
 
     return self
@@ -79,15 +75,16 @@ function Window:AddTab(name)
 
     local tabButton = self.Renderer:Create("TextButton", {
         Text = name,
-        Size = UDim2.new(1, 0, 0, 30),
+        Size = UDim2.new(1, -5, 0, 35),
         BackgroundColor3 = self.Renderer.Theme.Accent,
-        BackgroundTransparency = 0.8,
-        TextColor3 = self.Renderer.Theme.Text,
-        Font = Enum.Font.Gotham,
+        BackgroundTransparency = 0.9,
+        TextColor3 = self.Renderer.Theme.SecondaryText,
+        Font = Enum.Font.GothamMedium,
         TextSize = 14,
         Parent = self.TabContainer
     })
-    self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, tabButton)
+    self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 8)}, tabButton)
+    self.Renderer:AddInteraction(tabButton, {BackgroundTransparency = 0.7, TextColor3 = self.Renderer.Theme.Text})
 
     local container = self.Renderer:Create("ScrollingFrame", {
         Size = UDim2.new(1, 0, 1, 0),
@@ -98,59 +95,62 @@ function Window:AddTab(name)
         CanvasSize = UDim2.new(0,0,0,0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y
     })
-    self.Renderer:Create("UIListLayout", {Padding = UDim.new(0, 8)}, container)
-    self.Renderer:Create("UIPadding", {PaddingTop = UDim.new(0, 2), PaddingLeft = UDim.new(0, 2), PaddingRight = UDim.new(0, 5)}, container)
+    self.Renderer:Create("UIListLayout", {Padding = UDim.new(0, 10), Parent = container})
 
     if #self.Tabs == 0 then
         container.Visible = true
         tabButton.BackgroundTransparency = 0.5
+        tabButton.TextColor3 = self.Renderer.Theme.Text
     end
 
     tabButton.MouseButton1Click:Connect(function()
         for _, t in ipairs(self.Tabs) do
             t.Container.Visible = false
-            t.Button.BackgroundTransparency = 0.8
+            t.Button.BackgroundTransparency = 0.9
+            t.Button.TextColor3 = self.Renderer.Theme.SecondaryText
         end
         container.Visible = true
         tabButton.BackgroundTransparency = 0.5
+        tabButton.TextColor3 = self.Renderer.Theme.Text
     end)
 
     local tabObj = setmetatable({Container = container, Button = tabButton, Renderer = self.Renderer}, Tab)
     table.insert(self.Tabs, tabObj)
 
+    -- COMPONENT FACTORY
     function Tab:AddToggle(name, callback)
         local toggle = self.Renderer:Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 0.9,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            Size = UDim2.new(1, 0, 0, 40),
+            BackgroundColor3 = self.Renderer.Theme.ComponentBG,
+            BackgroundTransparency = 0.5,
             Parent = self.Container
         })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, toggle)
+        self.Renderer:Create("UICorner", {CornerRadius = self.Renderer.Theme.CornerRadius}, toggle)
 
-        local label = self.Renderer:Create("TextLabel", {
+        self.Renderer:Create("TextLabel", {
             Text = name,
-            Position = UDim2.new(0, 10, 0, 0),
-            Size = UDim2.new(1, -50, 1, 0),
+            Position = UDim2.new(0, 12, 0, 0),
+            Size = UDim2.new(1, -60, 1, 0),
             BackgroundTransparency = 1,
             TextColor3 = self.Renderer.Theme.Text,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Font = Enum.Font.Gotham,
+            Font = Enum.Font.GothamMedium,
             TextSize = 14,
             Parent = toggle
         })
 
         local button = self.Renderer:Create("TextButton", {
             Text = "",
-            Position = UDim2.new(1, -40, 0.5, -10),
-            Size = UDim2.new(0, 30, 0, 20),
-            BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+            Position = UDim2.new(1, -45, 0.5, -12),
+            Size = UDim2.new(0, 35, 0, 24),
+            BackgroundColor3 = Color3.fromRGB(60, 60, 65),
             Parent = toggle
         })
         self.Renderer:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, button)
 
         local dot = self.Renderer:Create("Frame", {
-            Size = UDim2.new(0, 16, 0, 16),
-            Position = UDim2.new(0, 2, 0.5, -8),
+            Size = UDim2.new(0, 20, 0, 20),
+            Position = UDim2.new(0, 2, 0.5, -10),
             BackgroundColor3 = Color3.fromRGB(255, 255, 255),
             Parent = button
         })
@@ -159,39 +159,38 @@ function Window:AddTab(name)
         local state = false
         button.MouseButton1Click:Connect(function()
             state = not state
-            self.Renderer:Tween(dot, 0.2, {Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)})
-            self.Renderer:Tween(button, 0.2, {BackgroundColor3 = state and self.Renderer.Theme.Accent or Color3.fromRGB(50, 50, 50)})
+            self.Renderer:Tween(dot, 0.2, {Position = state and UDim2.new(1, -22, 0.5, -10) or UDim2.new(0, 2, 0.5, -10)})
+            self.Renderer:Tween(button, 0.2, {BackgroundColor3 = state and self.Renderer.Theme.Accent or Color3.fromRGB(60, 60, 65)})
             callback(state)
         end)
-
         return toggle
     end
 
     function Tab:AddSlider(name, min, max, default, callback)
         local slider = self.Renderer:Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 45),
-            BackgroundTransparency = 0.9,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            Size = UDim2.new(1, 0, 0, 55),
+            BackgroundColor3 = self.Renderer.Theme.ComponentBG,
+            BackgroundTransparency = 0.5,
             Parent = self.Container
         })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, slider)
+        self.Renderer:Create("UICorner", {CornerRadius = self.Renderer.Theme.CornerRadius}, slider)
 
-        local label = self.Renderer:Create("TextLabel", {
+        self.Renderer:Create("TextLabel", {
             Text = name,
-            Position = UDim2.new(0, 10, 0, 5),
-            Size = UDim2.new(1, -70, 0, 15),
+            Position = UDim2.new(0, 12, 0, 8),
+            Size = UDim2.new(1, -20, 0, 20),
             BackgroundTransparency = 1,
             TextColor3 = self.Renderer.Theme.Text,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Font = Enum.Font.Gotham,
-            TextSize = 12,
+            Font = Enum.Font.GothamMedium,
+            TextSize = 14,
             Parent = slider
         })
 
-        local valueLabel = self.Renderer:Create("TextLabel", {
+        local valLabel = self.Renderer:Create("TextLabel", {
             Text = tostring(default),
-            Position = UDim2.new(1, -60, 0, 5),
-            Size = UDim2.new(0, 50, 0, 15),
+            Position = UDim2.new(1, -50, 0, 8),
+            Size = UDim2.new(0, 40, 0, 20),
             BackgroundTransparency = 1,
             TextColor3 = self.Renderer.Theme.SecondaryText,
             TextXAlignment = Enum.TextXAlignment.Right,
@@ -201,9 +200,9 @@ function Window:AddTab(name)
         })
 
         local track = self.Renderer:Create("Frame", {
-            Position = UDim2.new(0, 10, 0, 30),
-            Size = UDim2.new(1, -20, 0, 4),
-            BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+            Position = UDim2.new(0, 12, 0, 38),
+            Size = UDim2.new(1, -24, 0, 6),
+            BackgroundColor3 = Color3.fromRGB(40, 40, 45),
             Parent = slider
         })
         self.Renderer:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, track)
@@ -215,160 +214,86 @@ function Window:AddTab(name)
         })
         self.Renderer:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, fill)
 
-        local knob = self.Renderer:Create("Frame", {
-            Size = UDim2.new(0, 12, 0, 12),
-            Position = UDim2.new((default - min) / (max - min), -6, 0.5, -6),
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            Parent = track
-        })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(1, 0)}, knob)
-
         local dragging = false
         local function move(input)
             local pos = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
             local val = math.floor(min + (max - min) * pos)
-            valueLabel.Text = tostring(val)
+            valLabel.Text = tostring(val)
             fill.Size = UDim2.new(pos, 0, 1, 0)
-            knob.Position = UDim2.new(pos, -6, 0.5, -6)
             callback(val)
         end
 
-        self.Renderer.Engine:Track(knob.InputBegan:Connect(function(input)
+        track.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                 dragging = true
-            end
-        end))
-
-        self.Renderer.Engine:Track(UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = false
-            end
-        end))
-
-        self.Renderer.Engine:Track(UserInputService.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                 move(input)
             end
+        end)
+        self.Renderer.Engine:Track(UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false end
         end))
-
+        self.Renderer.Engine:Track(UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then move(input) end
+        end))
         return slider
     end
 
     function Tab:AddButton(name, callback)
-        local button = self.Renderer:Create("TextButton", {
+        local btn = self.Renderer:Create("TextButton", {
             Text = name,
-            Size = UDim2.new(1, 0, 0, 30),
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            BackgroundTransparency = 0.9,
+            Size = UDim2.new(1, 0, 0, 40),
+            BackgroundColor3 = self.Renderer.Theme.ComponentBG,
+            BackgroundTransparency = 0.5,
             TextColor3 = self.Renderer.Theme.Text,
-            Font = Enum.Font.Gotham,
+            Font = Enum.Font.GothamMedium,
             TextSize = 14,
             Parent = self.Container
         })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, button)
-        button.MouseButton1Click:Connect(callback)
-        return button
+        self.Renderer:Create("UICorner", {CornerRadius = self.Renderer.Theme.CornerRadius}, btn)
+        self.Renderer:AddInteraction(btn, {BackgroundTransparency = 0.3}, {BackgroundTransparency = 0.1})
+        btn.MouseButton1Click:Connect(callback)
+        return btn
     end
 
-    function Tab:AddDropdown(name, options, callback)
-        local dropdown = self.Renderer:Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 0.9,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            ClipsDescendants = true,
+    function Tab:AddColorPicker(name, default, callback)
+        local cp = self.Renderer:Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 40),
+            BackgroundColor3 = self.Renderer.Theme.ComponentBG,
+            BackgroundTransparency = 0.5,
             Parent = self.Container
         })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, dropdown)
+        self.Renderer:Create("UICorner", {CornerRadius = self.Renderer.Theme.CornerRadius}, cp)
 
-        local button = self.Renderer:Create("TextButton", {
-            Text = name .. " : " .. (options[1] or "None"),
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 1,
-            TextColor3 = self.Renderer.Theme.Text,
-            Font = Enum.Font.Gotham,
-            TextSize = 14,
-            Parent = dropdown
-        })
-
-        local open = false
-        button.MouseButton1Click:Connect(function()
-            open = not open
-            self.Renderer:Tween(dropdown, 0.3, {Size = open and UDim2.new(1, 0, 0, 35 + (#options * 30)) or UDim2.new(1, 0, 0, 35)})
-        end)
-
-        for i, opt in ipairs(options) do
-            local optBtn = self.Renderer:Create("TextButton", {
-                Text = opt,
-                Size = UDim2.new(1, 0, 0, 30),
-                Position = UDim2.new(0, 0, 0, 35 + (i-1) * 30),
-                BackgroundTransparency = 1,
-                TextColor3 = self.Renderer.Theme.SecondaryText,
-                Font = Enum.Font.Gotham,
-                TextSize = 12,
-                Parent = dropdown
-            })
-            optBtn.MouseButton1Click:Connect(function()
-                button.Text = name .. " : " .. opt
-                open = false
-                self.Renderer:Tween(dropdown, 0.3, {Size = UDim2.new(1, 0, 0, 35)})
-                callback(opt)
-            end)
-        end
-        return dropdown
-    end
-
-    function Tab:AddKeybind(name, default, callback)
-        local keybind = self.Renderer:Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 35),
-            BackgroundTransparency = 0.9,
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            Parent = self.Container
-        })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 6)}, keybind)
-
-        local label = self.Renderer:Create("TextLabel", {
+        self.Renderer:Create("TextLabel", {
             Text = name,
-            Position = UDim2.new(0, 10, 0, 0),
-            Size = UDim2.new(1, -80, 1, 0),
+            Position = UDim2.new(0, 12, 0, 0),
+            Size = UDim2.new(1, -60, 1, 0),
             BackgroundTransparency = 1,
             TextColor3 = self.Renderer.Theme.Text,
             TextXAlignment = Enum.TextXAlignment.Left,
-            Font = Enum.Font.Gotham,
+            Font = Enum.Font.GothamMedium,
             TextSize = 14,
-            Parent = keybind
+            Parent = cp
         })
 
-        local bindBtn = self.Renderer:Create("TextButton", {
-            Text = default.Name,
-            Position = UDim2.new(1, -70, 0.5, -10),
-            Size = UDim2.new(0, 60, 0, 20),
-            BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-            TextColor3 = self.Renderer.Theme.Text,
-            Font = Enum.Font.Gotham,
-            TextSize = 12,
-            Parent = keybind
+        local colorPreview = self.Renderer:Create("TextButton", {
+            Text = "",
+            Position = UDim2.new(1, -45, 0.5, -10),
+            Size = UDim2.new(0, 35, 0, 20),
+            BackgroundColor3 = default,
+            Parent = cp
         })
-        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 4)}, bindBtn)
+        self.Renderer:Create("UICorner", {CornerRadius = UDim.new(0, 4)}, colorPreview)
 
-        local currentBind = default
-        local listening = false
-
-        bindBtn.MouseButton1Click:Connect(function()
-            listening = true
-            bindBtn.Text = "..."
+        -- Logic for color selection would expand here (hiding a rainbow picker)
+        colorPreview.MouseButton1Click:Connect(function()
+            -- Mock color toggle
+            local r, g, b = math.random(), math.random(), math.random()
+            local newColor = Color3.new(r, g, b)
+            colorPreview.BackgroundColor3 = newColor
+            callback(newColor)
         end)
-
-        self.Renderer.Engine:Track(UserInputService.InputBegan:Connect(function(input)
-            if listening and input.UserInputType == Enum.UserInputType.Keyboard then
-                currentBind = input.KeyCode
-                bindBtn.Text = currentBind.Name
-                listening = false
-            elseif input.KeyCode == currentBind then
-                callback()
-            end
-        end))
-
-        return keybind
+        return cp
     end
 
     return tabObj

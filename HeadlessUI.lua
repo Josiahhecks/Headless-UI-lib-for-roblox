@@ -1,44 +1,33 @@
 local HeadlessUI = {}
 HeadlessUI.__index = HeadlessUI
 
--- IMPORTANT: This should be set to your raw GitHub content URL
+-- SET TO YOUR RAW GITHUB BASE URL
 local BASE_URL = "https://raw.githubusercontent.com/User/Repo/main/"
 
 local function dynamic_fetch(moduleName)
     local success, result = pcall(function()
-        -- Attempt to fetch from GitHub if BASE_URL is valid, otherwise use local require if available
         if BASE_URL:find("githubusercontent") then
             local code = game:HttpGet(BASE_URL .. moduleName .. ".lua")
             return loadstring(code)()
         else
-            -- Fallback for local testing in Roblox Studio
             local folder = script.Parent
             local module = folder:FindFirstChild(moduleName)
-            if module and module:IsA("ModuleScript") then
-                return require(module)
-            end
+            if module then return require(module) end
         end
     end)
-
-    if success and result then
-        return result
-    else
-        warn("[HeadlessUI] Failed to load module: " .. moduleName .. " | Error: " .. tostring(result))
-        return nil
-    end
+    return success and result or nil
 end
 
 function HeadlessUI.new()
     local self = setmetatable({}, HeadlessUI)
 
-    -- Dynamically load modules
     self.EngineModule = dynamic_fetch("Engine")
     self.RendererModule = dynamic_fetch("Renderer")
     self.ComponentsModule = dynamic_fetch("Components")
     self.NotyfModule = dynamic_fetch("Notyf")
 
     if not (self.EngineModule and self.RendererModule and self.ComponentsModule and self.NotyfModule) then
-        error("[HeadlessUI] Critical failure: Could not load all modules.")
+        error("[HeadlessUI] CRITICAL: Failed to initialize modules.")
     end
 
     self.Engine = self.EngineModule.new()
@@ -46,9 +35,8 @@ function HeadlessUI.new()
     self.Components = self.ComponentsModule.new(self.Renderer)
 
     self.ScreenGui = Instance.new("ScreenGui")
-    self.ScreenGui.Name = "HeadlessUI"
-    self.ScreenGui.ResetOnSpawn = false
-    self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    self.ScreenGui.Name = "HeadlessUI_Core"
+    self.ScreenGui.DisplayOrder = 100
     self.ScreenGui.Parent = game:GetService("CoreGui")
     self.Engine:Track(self.ScreenGui)
 
@@ -56,10 +44,6 @@ function HeadlessUI.new()
     self.Notyf.Container.Parent = self.ScreenGui
 
     return self
-end
-
-function HeadlessUI:SetPerformanceMode(high)
-    self.Engine:SetPerformanceMode(high)
 end
 
 function HeadlessUI:CreateWindow(config)
@@ -70,6 +54,10 @@ end
 
 function HeadlessUI:Notify(title, message, duration)
     self.Notyf:Notify(title, message, duration)
+end
+
+function HeadlessUI:SetPerformanceMode(enabled)
+    self.Engine:SetPerformanceMode(enabled)
 end
 
 function HeadlessUI:Destroy()

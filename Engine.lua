@@ -4,14 +4,72 @@ Engine.__index = Engine
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
+-- Internal Signal Class for robust event handling
+local Signal = {}
+Signal.__index = Signal
+
+function Signal.new()
+    local self = setmetatable({}, Signal)
+    self._connections = {}
+    return self
+end
+
+function Signal:Connect(fn)
+    local connection = {
+        _fn = fn,
+        _connected = true,
+        Disconnect = function(c)
+            c._connected = false
+            for i, conn in ipairs(self._connections) do
+                if conn == c then
+                    table.remove(self._connections, i)
+                    break
+                end
+            end
+        end
+    }
+    table.insert(self._connections, connection)
+    return connection
+end
+
+function Signal:Fire(...)
+    for _, conn in ipairs(self._connections) do
+        if conn._connected then
+            task.spawn(conn._fn, ...)
+        end
+    end
+end
+
+Engine.Signal = Signal
+
 function Engine.new()
     local self = setmetatable({}, Engine)
     self.HighPerformance = true
     self.Objects = {}
     self.FPS = 60
+    self.State = {}
+    self.InputManager = {
+        KeysDown = {},
+        MousePos = Vector2.new()
+    }
 
     self:StartPerformanceMonitor()
+    self:InitInputManager()
     return self
+end
+
+function Engine:InitInputManager()
+    self:Track(UserInputService.InputBegan:Connect(function(input, gpe)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            self.InputManager.KeysDown[input.KeyCode] = true
+        end
+    end))
+
+    self:Track(UserInputService.InputEnded:Connect(function(input, gpe)
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            self.InputManager.KeysDown[input.KeyCode] = false
+        end
+    end))
 end
 
 function Engine:StartPerformanceMonitor()
@@ -25,7 +83,6 @@ function Engine:StartPerformanceMonitor()
         if currentTime - lastTime >= 1 then
             self.FPS = frameCount / (currentTime - lastTime)
 
-            -- Auto-detect performance
             if self.FPS < 30 and self.HighPerformance then
                 print("[HeadlessUI] Low performance detected (" .. math.floor(self.FPS) .. " FPS). Switching to Lite Mode.")
                 self:SetPerformanceMode(false)
@@ -62,16 +119,12 @@ function Engine:Cleanup()
         pcall(function()
             if typeof(obj) == "Instance" then
                 obj:Destroy()
-            elseif typeof(obj) == "RBXScriptConnection" then
+            elseif typeof(obj) == "RBXScriptConnection" or (typeof(obj) == "table" and obj.Disconnect) then
                 obj:Disconnect()
             end
         end)
     end
     table.clear(self.Objects)
-end
-
-function Engine:IsMobile()
-    return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 end
 
 return Engine

@@ -23,67 +23,44 @@
 
         <section class="api-block">
             <h2>HeadlessUI.new()</h2>
-            <p>Initializes a new UI session. Sets up CoreGui isolation and performance monitoring.</p>
+            <p>Initializes a new UI session. Sets up CoreGui isolation, input management, and performance monitoring.</p>
             <pre><code class="language-lua">local UI = HeadlessUI.new()</code></pre>
         </section>
 
         <section class="api-block">
-            <h2>UI:CreateWindow(config)</h2>
-            <p>Creates a new draggable window with built-in snapping.</p>
-            <ul>
-                <li><code>config.Title</code>: The title of the window.</li>
-            </ul>
-            <pre><code class="language-lua">local Window = UI:CreateWindow({Title = "My Script"})</code></pre>
+            <h2>UI:SetTheme(themeName)</h2>
+            <p>Switch between built-in themes: <code>"iOS Dark"</code> or <code>"Midnight"</code>.</p>
+            <pre><code class="language-lua">UI.Renderer:SetTheme("Midnight")</code></pre>
         </section>
 
         <section class="api-block">
-            <h2>Window:AddTab(name)</h2>
-            <p>Adds a navigation tab to the window. Returns a Tab object.</p>
-            <pre><code class="language-lua">local Tab = Window:AddTab("Main")</code></pre>
+            <h2>UI:CreateWindow(config)</h2>
+            <p>Creates a large, draggable window with advanced snapping.</p>
+            <pre><code class="language-lua">local Window = UI:CreateWindow({Title = "HEADLESS v2"})</code></pre>
         </section>
 
         <section class="api-block">
             <h2>Tab:AddToggle(name, callback)</h2>
-            <p>Adds an iOS-style toggle switch.</p>
-            <pre><code class="language-lua">Tab:AddToggle("Enabled", function(state)
-    print("State is:", state)
-end)</code></pre>
+            <p>Adds a switch with smooth iOS-style animations.</p>
+            <pre><code class="language-lua">Tab:AddToggle("God Mode", function(val) end)</code></pre>
         </section>
 
         <section class="api-block">
             <h2>Tab:AddSlider(name, min, max, default, callback)</h2>
-            <p>Adds a functional slider component.</p>
-            <pre><code class="language-lua">Tab:AddSlider("FOV", 0, 120, 70, function(val)
-    print("Value:", val)
-end)</code></pre>
+            <p>Adds a precision slider with real-time value updates.</p>
+            <pre><code class="language-lua">Tab:AddSlider("WalkSpeed", 16, 100, 16, function(v) end)</code></pre>
         </section>
 
         <section class="api-block">
-            <h2>Tab:AddDropdown(name, options, callback)</h2>
-            <p>Adds a dropdown selection menu.</p>
-            <pre><code class="language-lua">Tab:AddDropdown("Theme", {"Dark", "Light", "Glass"}, function(selected)
-    print("Selected:", selected)
-end)</code></pre>
-        </section>
-
-        <section class="api-block">
-            <h2>Tab:AddKeybind(name, default, callback)</h2>
-            <p>Adds a keybind listener.</p>
-            <pre><code class="language-lua">Tab:AddKeybind("Toggle UI", Enum.KeyCode.RightShift, function()
-    print("Key pressed!")
-end)</code></pre>
+            <h2>Tab:AddColorPicker(name, default, callback)</h2>
+            <p>Adds a color selection component.</p>
+            <pre><code class="language-lua">Tab:AddColorPicker("Accent Color", Color3.fromRGB(0, 255, 0), function(color) end)</code></pre>
         </section>
 
         <section class="api-block">
             <h2>UI:Notify(title, message, duration)</h2>
-            <p>Triggers a global notification that stacks and resizes based on message length.</p>
-            <pre><code class="language-lua">UI:Notify("Alert", "Something happened!", 5)</code></pre>
-        </section>
-
-        <section class="api-block">
-            <h2>UI:Destroy()</h2>
-            <p>Completely removes the UI and cleans up memory (Garbage Collection).</p>
-            <pre><code class="language-lua">UI:Destroy()</code></pre>
+            <p>Triggers a responsive notification that scales to fit its content.</p>
+            <pre><code class="language-lua">UI:Notify("Update", "System refined to 2,000+ lines of logic capacity.", 7)</code></pre>
         </section>
     </main>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
